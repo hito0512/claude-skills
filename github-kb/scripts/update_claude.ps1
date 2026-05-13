@@ -4,19 +4,100 @@
 
 $claudeFile = Join-Path $RepoDir "CLAUDE.md"
 
+function Get-GhInfo {
+    param([string]$RemoteUrl)
+    if ($RemoteUrl -match 'github\.com[/:]([^/]+)/([^/]+?)(?:\.git)?$') {
+        $owner = $matches[1]
+        $repo = $matches[2]
+        try {
+            return & gh repo view "$owner/$repo" --json description,language 2>$null | ConvertFrom-Json
+        } catch { }
+    }
+    return $null
+}
+
+function Get-RepoLanguage {
+    param([string]$RepoPath)
+    $langMap = @{
+        'package.json'       = 'JavaScript / TypeScript'
+        'Cargo.toml'         = 'Rust'
+        'go.mod'             = 'Go'
+        'pom.xml'            = 'Java'
+        'build.gradle'       = 'Java / Kotlin'
+        'requirements.txt'   = 'Python'
+        'setup.py'           = 'Python'
+        'pyproject.toml'     = 'Python'
+        'CMakeLists.txt'     = 'C / C++'
+        'Makefile'           = 'C / C++'
+        'Gemfile'            = 'Ruby'
+        'Cargo.lock'         = 'Rust'
+        'composer.json'      = 'PHP'
+        'Project.csproj'     = 'C#'
+        'Solution.sln'       = 'C#'
+        'Podfile'            = 'Swift / Objective-C'
+    }
+    foreach ($file in $langMap.Keys) {
+        if (Test-Path (Join-Path $RepoPath $file)) { return $langMap[$file] }
+    }
+    # Check for .csproj files
+    $csproj = Get-ChildItem $RepoPath -Filter *.csproj -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($csproj) { return 'C#' }
+    return $null
+}
+
+function Get-RepoDescription {
+    param([string]$RepoPath, [string]$RepoName, [string]$RemoteUrl)
+
+    $ghInfo = Get-GhInfo -RemoteUrl $RemoteUrl
+    if ($ghInfo -and $ghInfo.description) {
+        return $ghInfo.description
+    }
+
+    # Fallback: read README.zh-CN.md (Chinese README preferred)
+    $zhReadme = Join-Path $RepoPath "README.zh-CN.md"
+    $readme = Join-Path $RepoPath "README.md"
+    $readmePath = $null
+    if (Test-Path $zhReadme) {
+        $readmePath = $zhReadme
+    } elseif (Test-Path $readme) {
+        $readmePath = $readme
+    }
+
+    if ($readmePath) {
+        $content = Get-Content $readmePath -TotalCount 50 -Encoding UTF8
+        foreach ($line in $content) {
+            $trimmed = $line.Trim()
+            if ($trimmed -match '^#{1,3}\s') { continue }
+            if ($trimmed -match '^\[!\[') { continue }
+            if ($trimmed -match '^<') { continue }
+            if ($trimmed -match '^https?://') { continue }
+            if ($trimmed.Length -gt 20) {
+                if ($trimmed.Length -gt 120) { $trimmed = $trimmed.Substring(0, 117) + "..." }
+                return $trimmed
+            }
+        }
+    }
+
+    # Last resort: last commit message
+    $commitMsg = & git -C $RepoPath log -1 --format="%s" 2>$null
+    if ($commitMsg) { return $commitMsg }
+
+    return ""
+}
+
 # Scan all directories (repos)
 $repos = Get-ChildItem $RepoDir -Directory | Where-Object { $_.Name -ne ".git" }
 
 $lines = [System.Collections.Generic.List[string]]::new()
 $lines.Add("# GitHub Repositories")
 $lines.Add("")
-$lines.Add(('Local GitHub repo dir: {0}' -f $RepoDir))
+$lines.Add(('本地 GitHub 仓库目录：{0}' -f $RepoDir))
 $lines.Add("")
-$lines.Add("## Repositories")
+$lines.Add("## 仓库列表")
 $lines.Add("")
 
 if ($repos.Count -eq 0) {
-    $lines.Add("*(no repos yet)*")
+    $lines.Add("*(暂无仓库)*")
 } else {
     foreach ($repo in $repos) {
         $repoPath = $repo.FullName
@@ -24,19 +105,22 @@ if ($repos.Count -eq 0) {
 
         if (Test-Path $gitDir) {
             $remoteUrl = & git -C $repoPath remote get-url origin 2>$null
-            if (-not $remoteUrl) { $remoteUrl = "(local only, no remote)" }
+            if (-not $remoteUrl) { $remoteUrl = "(仅本地，无远程)" }
 
-            $desc = & git -C $repoPath log -1 --format="%s" 2>$null
-            if (-not $desc) { $desc = "" }
+            $ghInfo = Get-GhInfo -RemoteUrl $remoteUrl
+            $desc = Get-RepoDescription -RepoPath $repoPath -RepoName $repo.Name -RemoteUrl $remoteUrl
+            $lang = if ($ghInfo -and $ghInfo.language) { $ghInfo.language } else { Get-RepoLanguage -RepoPath $repoPath }
 
-            $bullet = '- **{0}**' -f $repo.Name
-            $lines.Add($bullet)
+            $lines.Add(('- **{0}**' -f $repo.Name))
             if ($desc) {
-                $lines.Add(('   - {0}' -f $desc))
+                $lines.Add(('  - {0}' -f $desc))
             }
-            $lines.Add(('   - `{0}`' -f $remoteUrl))
+            if ($lang) {
+                $lines.Add(('  - 语言：{0}' -f $lang))
+            }
+            $lines.Add(('  - `{0}`' -f $remoteUrl))
         } else {
-            $lines.Add(('- **{0}** (not a git repo)' -f $repo.Name))
+            $lines.Add(('- **{0}**（非 git 仓库）' -f $repo.Name))
         }
         $lines.Add("")
     }
@@ -44,9 +128,9 @@ if ($repos.Count -eq 0) {
 
 $lines.Add("---")
 $lines.Add("")
-$lines.Add("*CLAUDE.md auto-managed by github-kb skill. Updated on repo add/remove.*")
+$lines.Add("*CLAUDE.md 由 github-kb skill 自动管理。添加/删除仓库后会自动更新。*")
 
 $content = $lines -join "`r`n"
 Set-Content -Path $claudeFile -Value $content -Encoding UTF8
 
-Write-Output ('CLAUDE.md updated. Scanned {0} repos.' -f $repos.Count)
+Write-Output ("CLAUDE.md 已更新。扫描到 {0} 个仓库。" -f $repos.Count)
