@@ -5,9 +5,9 @@ description: 本地 GitHub 仓库知识库，同时支持 HuggingFace、ModelSco
 
 # GitHub KB + Model Hub Search
 
-维护 `G:\workspace\github` 目录下的仓库清单，同时提供 HuggingFace 和 ModelScope 的模型搜索能力。
+维护 `E:\workspace\github` 目录下的仓库清单，同时提供 HuggingFace 和 ModelScope 的模型搜索能力。
 
-CLAUDE.md 文件见 `@G:\workspace\github\CLAUDE.md`
+CLAUDE.md 文件见 `@E:\workspace\github\CLAUDE.md`
 
 ## 触发条件
 
@@ -22,10 +22,10 @@ CLAUDE.md 文件见 `@G:\workspace\github\CLAUDE.md`
 
 ### 1. 查找本地仓库
 
-用户提到某个仓库时，先检查本地 `G:\workspace\github\` 中是否已存在：
+用户提到某个仓库时，先检查本地 `E:\workspace\github\` 中是否已存在：
 
 ```powershell
-$repoDir = "G:\workspace\github"
+$repoDir = "E:\workspace\github"
 Get-ChildItem $repoDir -Directory | Select-Object Name
 ```
 
@@ -36,7 +36,7 @@ Get-ChildItem $repoDir -Directory | Select-Object Name
 当用户说"下载一个 repo"时：
 
 ```powershell
-cd G:\workspace\github
+cd E:\workspace\github
 git clone <repo-url>
 ```
 
@@ -134,7 +134,7 @@ curl.exe -s "https://api.github.com/repos/<owner>/<repo>"
 
 ### scripts/update_claude.ps1
 
-扫描 `G:\workspace\github` 目录，为每个仓库生成一句话摘要，写入 CLAUDE.md。
+扫描 `E:\workspace\github` 目录，为每个仓库生成一句话摘要，写入 CLAUDE.md。
 
 ## 注意事项
 

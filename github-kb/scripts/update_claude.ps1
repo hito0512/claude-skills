@@ -1,5 +1,5 @@
 ﻿param(
-    [string]$RepoDir = "G:\workspace\github"
+    [string]$RepoDir = "E:\workspace\github"
 )
 
 $claudeFile = Join-Path $RepoDir "CLAUDE.md"
