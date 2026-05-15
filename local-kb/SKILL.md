@@ -56,6 +56,22 @@ cd /path/to/project && kb <子命令>
 
 当用户要求"查看/搜索/分析"某个文档或内容时：
 
+### 步骤 0：自动补全标签（如有必要）
+
+先检查是否有文档缺少 LLM 标签（上次 enrich 可能因 LLM 不通而失败）：
+
+```powershell
+cd E:\workspace\project; kb docs | Select-String "q: -"
+```
+
+如果输出不为空（有文档质量分为 `-`），说明标签未生成，自动跑 enrich：
+
+```powershell
+cd E:\workspace\project; kb enrich
+```
+
+> 仅补打缺失的标签，已有标签的不重复处理。
+
 ### 步骤 1：列出文档
 
 ```powershell
