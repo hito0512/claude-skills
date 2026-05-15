@@ -129,6 +129,36 @@ cd E:\workspace\project; kb ingest
 
 后续新增或修改文档后，重复 `kb ingest` 增量更新。
 
+### LLM 智能打标签（可选）
+
+`kb enrich` 使用 LLM 自动为文档生成标签、摘要、主题分类，写入索引后搜索时加权提权。
+
+首次配置：
+
+```yaml
+# E:\workspace\project\.lore\lore.yaml
+llm:
+  provider: openai                    # 固定为 openai（兼容 OpenAI API 的都可）
+  openai_model: deepseek-v4-flash      # 模型名称
+  openai_base_url: https://api.deepseek.com  # API 地址
+  openai_api_key: "sk-xxx"             # API 密钥
+  enrich_chunks:
+    enabled: true
+    quality_threshold: 0.3
+  detect_topics:
+    enabled: true
+  summarize_docs:
+    enabled: true
+```
+
+执行 enrichment（首次用 `--force` 强制所有文档，后续增量自动跳过已处理的）：
+
+```powershell
+cd E:\workspace\project; kb enrich --force
+```
+
+生成的标签存储在 Tantivy 索引中（`llm_tags` 字段），搜索时直接从索引读取，**不重复调用 LLM**。
+
 ## 核心命令
 
 | 命令 | 用途 | 示例 |
@@ -138,7 +168,8 @@ cd E:\workspace\project; kb ingest
 | `kb search <query>` | 全文搜索（仅限英文/数字） | `kb search "yolov5s"` |
 | `kb docs` | 列出所有文档（含路径） | `kb docs --format xlsx` |
 | `kb read <file>` | 读取文档全文（中文首选） | `kb read "目标检测评估.xls"` |
-| `kb topics` | 查看主题分类 | `kb topics` |
+| `kb topics` | 查看 LLM 生成的主题分类 | `kb topics` |
+| `kb enrich` | LLM 智能打标签/摘要/主题分类 | `kb enrich --force` |
 | `kb info` | 知识库统计 | `kb info` |
 | `kb serve` | 启动 MCP 服务器 | `kb serve` |
 | `kb watch` | 监听文件变化 | `kb watch` |
