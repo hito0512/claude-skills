@@ -6,8 +6,8 @@
 
 | Skill | 描述 |
 |-------|------|
-| [github-kb](github-kb/) | 本地 GitHub 仓库知识库，支持 HuggingFace / ModelScope 模型搜索 |
-| [local-kb](local-kb/) | 本地文档知识库管理（kb CLI），支持 Excel/PDF/Word/MD/TXT 全文搜索 |
+| [gitkb](gitkb/) | 本地 GitHub 仓库知识库，支持 HuggingFace / ModelScope 模型搜索 |
+| [dockb](dockb/) | 本地文档知识库管理（kb CLI），支持 Excel/PDF/Word/MD/TXT 全文搜索 |
 
 ---
 
