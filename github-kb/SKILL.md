@@ -135,6 +135,7 @@ curl.exe -s "https://api.github.com/repos/<owner>/<repo>"
 ### scripts/update_claude.ps1
 
 扫描 `E:\workspace\github` 目录，为每个仓库生成一句话摘要，写入 CLAUDE.md。
+描述提取优先级：中文 README → GitHub API 描述 → 英文 README → 最近 commit 信息。
 
 ## 注意事项
 

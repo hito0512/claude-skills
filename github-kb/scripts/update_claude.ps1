@@ -48,34 +48,14 @@ function Get-RepoLanguage {
 function Get-RepoDescription {
     param([string]$RepoPath, [string]$RepoName, [string]$RemoteUrl)
 
+    # 优先从 README 提取中文描述
+    $desc = Read-ReadmeDescription -RepoPath $RepoPath
+    if ($desc) { return $desc }
+
+    # 其次使用 GitHub API 描述（通常为英文）
     $ghInfo = Get-GhInfo -RemoteUrl $RemoteUrl
     if ($ghInfo -and $ghInfo.description) {
         return $ghInfo.description
-    }
-
-    # Fallback: read README.zh-CN.md (Chinese README preferred)
-    $zhReadme = Join-Path $RepoPath "README.zh-CN.md"
-    $readme = Join-Path $RepoPath "README.md"
-    $readmePath = $null
-    if (Test-Path $zhReadme) {
-        $readmePath = $zhReadme
-    } elseif (Test-Path $readme) {
-        $readmePath = $readme
-    }
-
-    if ($readmePath) {
-        $content = Get-Content $readmePath -TotalCount 50 -Encoding UTF8
-        foreach ($line in $content) {
-            $trimmed = $line.Trim()
-            if ($trimmed -match '^#{1,3}\s') { continue }
-            if ($trimmed -match '^\[!\[') { continue }
-            if ($trimmed -match '^<') { continue }
-            if ($trimmed -match '^https?://') { continue }
-            if ($trimmed.Length -gt 20) {
-                if ($trimmed.Length -gt 120) { $trimmed = $trimmed.Substring(0, 117) + "..." }
-                return $trimmed
-            }
-        }
     }
 
     # Last resort: last commit message
@@ -83,6 +63,37 @@ function Get-RepoDescription {
     if ($commitMsg) { return $commitMsg }
 
     return ""
+}
+
+function Read-ReadmeDescription {
+    param([string]$RepoPath)
+
+    # 优先尝试中文 README，再试英文
+    $candidates = @("README.zh-CN.md", "README.md", "readme.md", "README")
+    $readmePath = $null
+    foreach ($name in $candidates) {
+        $test = Join-Path $RepoPath $name
+        if (Test-Path $test) { $readmePath = $test; break }
+    }
+
+    if (-not $readmePath) { return $null }
+
+    $content = Get-Content $readmePath -TotalCount 50 -Encoding UTF8
+    foreach ($line in $content) {
+        $trimmed = $line.Trim()
+        if ($trimmed -match '^#{1,3}\s') { continue }
+        if ($trimmed -match '^\[!\[') { continue }
+        if ($trimmed -match '^<') { continue }
+        if ($trimmed -match '^https?://') { continue }
+        # 剥离 HTML 标签
+        $trimmed = $trimmed -replace '<[^>]+>', ''
+        $trimmed = $trimmed.Trim()
+        if ($trimmed.Length -gt 20) {
+            if ($trimmed.Length -gt 120) { $trimmed = $trimmed.Substring(0, 117) + "..." }
+            return $trimmed
+        }
+    }
+    return $null
 }
 
 # Scan all directories (repos)
