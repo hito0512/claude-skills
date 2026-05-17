@@ -1,5 +1,5 @@
 ---
-name: local-kb
+name: dockb
 description: 本地文件知识库管理工具（kb CLI）。管理 Excel/PDF/Word/MD/TXT 等文档，搭建个人知识库。支持全文搜索、MCP 服务、多库联邦。Excel 输出表格格式。索引文件存放于 E:\workspace\project\.lore，源文件可分布在任意路径。
 ---
 

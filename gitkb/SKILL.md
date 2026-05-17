@@ -1,5 +1,5 @@
 ---
-name: github-kb
+name: gitkb
 description: 本地 GitHub 仓库知识库，同时支持 HuggingFace、ModelScope 搜索查询。在用户提到 github/repo/仓库/模型/pretrained/权重，或搜索 huggingface/modelscope 上的模型时触发。优先在本地目录查找已有仓库，支持：gh 搜索 GitHub issues/PRs/repos、HuggingFace API 搜索模型、ModelScope API 搜索模型，curl 回退。
 ---
 
