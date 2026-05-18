@@ -11,4 +11,4 @@ Claude Code 技能合集仓库。
 
 ## 安装
 
-每个技能通过目录链接（junction）安装到 `C:\Users\hito\.claude\skills\<技能名>\`，指向本仓库对应子目录。
+每个技能通过目录链接（junction）安装到 `~/.claude/skills/<技能名>/`，指向本仓库对应子目录。
