@@ -42,6 +42,13 @@ function Get-RepoLanguage {
     # Check for .csproj files
     $csproj = Get-ChildItem $RepoPath -Filter *.csproj -ErrorAction SilentlyContinue | Select-Object -First 1
     if ($csproj) { return 'C#' }
+
+    # Fallback: search recursively in subdirectories
+    $setupPy = Get-ChildItem $RepoPath -Filter setup.py -Recurse -ErrorAction SilentlyContinue -Depth 3 | Select-Object -First 1
+    if ($setupPy) { return 'Python' }
+    $pyproj = Get-ChildItem $RepoPath -Filter pyproject.toml -Recurse -ErrorAction SilentlyContinue -Depth 3 | Select-Object -First 1
+    if ($pyproj) { return 'Python' }
+
     return $null
 }
 
@@ -145,3 +152,4 @@ $content = $lines -join "`r`n"
 Set-Content -Path $claudeFile -Value $content -Encoding UTF8
 
 Write-Output ("CLAUDE.md 已更新。扫描到 {0} 个仓库。" -f $repos.Count)
+Write-Output "请检查每个仓库的描述是否为中文，如有英文请翻译为中文。"

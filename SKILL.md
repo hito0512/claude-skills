@@ -46,6 +46,8 @@ git clone <repo-url>
 
 每次添加/删除仓库后，运行 `scripts\update_claude.ps1` 重新扫描目录并更新摘要。
 
+**必须**：更新脚本运行后，检查每个仓库的描述是否为中文。如果描述是英文（来自 GitHub API 或英文 README），需要将其翻译为简洁的一句话中文摘要。确保描述不超过 120 字，准确概括仓库用途。
+
 ### 4. 搜索 HuggingFace
 
 搜索 HuggingFace 上的模型：
@@ -135,7 +137,8 @@ curl.exe -s "https://api.github.com/repos/<owner>/<repo>"
 ### scripts/update_claude.ps1
 
 扫描 `E:\workspace\github` 目录，为每个仓库生成一句话摘要，写入 CLAUDE.md。
-描述提取优先级：中文 README → GitHub API 描述 → 英文 README → 最近 commit 信息。
+描述提取优先级：中文 README → GitHub API 描述（需转为中文） → 英文 README（需转为中文） → 最近 commit 信息。
+最终所有描述必须为中文。
 
 ## 注意事项
 
