@@ -1,0 +1,23 @@
+{
+  "name": "claude-skills",
+  "owner": {
+    "name": "hito0512"
+  },
+  "metadata": {
+    "description": "Claude Code 技能合集：gitkb（GitHub 知识库）、dockb（本地文档知识库）、siyuan（思源笔记操作）",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "kb-skills",
+      "description": "知识库管理技能：gitkb（GitHub 仓库搜索与管理）、dockb（本地文档知识库管理）、siyuan（思源笔记操作）",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/gitkb",
+        "./skills/dockb",
+        "./skills/siyuan"
+      ]
+    }
+  ]
+}

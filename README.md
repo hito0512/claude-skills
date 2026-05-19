@@ -12,13 +12,20 @@ Claude Code 技能合集仓库。
 
 ## 安装
 
+### Claude Code 插件市场（推荐）
+
 ```bash
-# 安装所有技能（全局）
-npx skills add hito0512/claude-skills -g -y
+# 注册仓库为插件市场
+/plugin marketplace add hito0512/claude-skills
 
-# 安装单个技能
-npx skills add hito0512/claude-skills --skill siyuan -g -y
+# 安装 kb-skills 插件（包含 gitkb、dockb、siyuan 三个技能）
+/plugin install kb-skills@claude-skills
+```
 
-# 查看已安装技能
-npx skills ls -g
+### 手动安装
+
+直接复制到 Claude Code 技能目录：
+
+```bash
+cp -r skills/* ~/.claude/skills/
 ```
