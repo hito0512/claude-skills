@@ -1,11 +1,16 @@
 ---
 name: siyuan-publish
-description: 思源笔记挂件发布到集市的工作流，从打包 zip 到创建 GitHub Release。
+description: 思源笔记挂件发布到集市的工作流，从打包 zip 到创建 GitHub Release。用户说"发布"时要自动触发此技能。
 ---
 
 # 思源挂件发布流程
 
 从打包到上架集市的完整步骤。
+
+## 触发方式
+
+- 用户输入 `/hito-skills:siyuan-publish` 时触发
+- **用户说"发布"、"发布版本"、"打 release" 等关键词时也要主动触发此技能**
 
 ## 1. 打包 package.zip
 
@@ -52,31 +57,37 @@ Compress-Archive -Path CHANGELOG.md, LICENSE, README.md, icon.png, img, index.ht
 }
 ```
 
-## 2. 提交 Git 并推送
+## 2. 确认版本号并更新 widget.json
 
 ```bash
-# 排除无需提交的文件（创建 .gitignore）
-echo ".claude/" >> .gitignore
-echo "0000.png" >> .gitignore
-echo "plan.md" >> .gitignore
-echo "CLAUDE.md" >> .gitignore
+# 查看远程已有版本
+gh release list -L 10
 
-# 已跟踪的 CLAUDE.md 需要从远端删除
-git rm --cached CLAUDE.md
+# 检查 widget.json 中的版本号
+cat widget.json | grep version
 
-# 提交
-git add -A
-git commit -m "feat: v版本号 更新说明"
+# 版本号递增规则（semver）：
+# - 修复: patch+1 (0.2.1 → 0.2.2)
+# - 新增功能: minor+1 (0.2.x → 0.3.0)
+# - 大改动: major+1 (0.x.x → 1.0.0)
+# 如果远程已有相同版本号的 release，必须先递增再发布，不可删除重建
+```
+
+## 3. 提交 Git 并推送
+
+```bash
+git add widget.json package.zip
+git commit -m "chore: bump version to 新版本号"
 git push
 ```
 
-## 3. 创建 GitHub Release
+## 4. 创建 GitHub Release
 
 ```bash
 # 确保在挂件目录
-cd "挂件目录"
 
 # 创建 Release 并上传 package.zip
+# 版本号取自 widget.json，加 v 前缀作为 tag
 gh release create v版本号 \
   --title "v版本号" \
   --notes "## 更新内容
@@ -98,7 +109,7 @@ gh release create v0.2.0 \
   package.zip
 ```
 
-## 4. 集市自动更新
+## 5. 集市自动更新
 
 发布 Release 后无需任何操作，集市会自动拉取更新：
 
@@ -118,4 +129,5 @@ gh release create v0.2.0 \
 
 - 遵循 [semver](https://semver.org/lang/zh-CN/) 规范
 - 每次发布前检查 `widget.json` 中的 version 字段
-- 远程已有相同版本号时，先递增再发布
+- **发布前先检查远程是否有相同版本号的 release**
+- **如果远程已有相同版本号，递增版本号后再发布，禁止删除已有 release**
