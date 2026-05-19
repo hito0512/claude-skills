@@ -18,8 +18,8 @@ Claude Code 技能合集仓库。
 # 注册仓库为插件市场
 /plugin marketplace add hito0512/claude-skills
 
-# 安装 kb-skills 插件（包含 gitkb、dockb、siyuan 三个技能）
-/plugin install kb-skills@claude-skills
+# 安装 hito-skills 插件（包含 gitkb、dockb、siyuan 三个技能）
+/plugin install hito-skills@claude-skills
 ```
 
 ### 手动安装
