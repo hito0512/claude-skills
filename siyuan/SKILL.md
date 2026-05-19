@@ -1,6 +1,6 @@
 ---
 name: siyuan
-description: SiYuan（思源笔记）CLI 工具，通过 cli-anything-siyuan 操作笔记本、文档、内容块，支持 SQL 查询和全文搜索。在用户提到思源笔记、查询笔记内容、操作知识库时触发。
+description: SiYuan（思源笔记，简称 sy）CLI 工具，通过 cli-anything-siyuan 操作笔记本、文档、内容块，支持 SQL 查询和全文搜索。在用户提到思源笔记、sy、查询笔记内容、操作知识库时触发。
 ---
 
 # SiYuan CLI (cli-anything-siyuan)
@@ -27,7 +27,7 @@ description: SiYuan（思源笔记）CLI 工具，通过 cli-anything-siyuan 操
 
 ## 触发条件
 
-- 思源 / SiYuan / 笔记 / 知识库
+- 思源 / SiYuan / sy / 笔记 / 知识库
 - 查询笔记内容 / 搜索笔记
 - 操作笔记本 / 文档 / 块
 - 导出 Markdown
