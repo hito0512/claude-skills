@@ -20,6 +20,9 @@ Claude Code 技能合集仓库。
 
 # 安装 hito-skills 插件（包含 gitkb、dockb、siyuan 三个技能）
 /plugin install hito-skills@claude-skills
+
+# 安装后必须重载才能使用斜杠命令
+/reload-plugins
 ```
 
 ### 手动安装
