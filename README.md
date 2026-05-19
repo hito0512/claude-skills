@@ -8,6 +8,7 @@ Claude Code 技能合集仓库。
 |------|------|------|
 | gitkb | `gitkb/` | GitHub 仓库知识库 + HuggingFace/ModelScope 搜索 |
 | dockb | `dockb/` | 本地文件知识库管理工具 |
+| siyuan | `siyuan/` | 思源笔记 CLI 工具操作知识库 |
 
 ## 安装
 
