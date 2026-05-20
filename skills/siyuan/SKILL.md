@@ -159,7 +159,7 @@ cli-anything-siyuan
 
 1. 用 `export md` 导出文档 markdown
 2. 解析清单项，按 `references/dynamic-todo-task-card.md` 的 JSON 格式生成
-3. 保存为 JSON 文件，告知用户路径
+3. 保存为 JSON 文件到桌面（`~/Desktop/<文件名>.json`），**严禁放入代码目录或提交 git**
 4. **用户自己在 DynamicTodo 挂件中 ⚙️ → 导入数据**
 
 ### 与挂件的关系
