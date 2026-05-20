@@ -1,6 +1,6 @@
 ---
 name: siyuan
-description: SiYuan（思源笔记，简称 sy）CLI 工具，通过 cli-anything-siyuan 操作笔记本、文档、内容块，支持 SQL 查询和全文搜索。在用户提到 siyuan、思源、笔记、sy、查询笔记内容、操作知识库时触发。
+description: SiYuan（思源笔记，简称 sy）CLI 工具，通过 cli-anything-siyuan 操作笔记本、文档、内容块，支持 SQL 查询和全文搜索，生成任务卡片 JSON 供 DynamicTodo 导入。在用户提到 siyuan、思源、笔记、sy、任务卡片、制作卡片、查询笔记内容、操作知识库时触发。
 ---
 
 # SiYuan CLI (cli-anything-siyuan)
@@ -32,6 +32,7 @@ description: SiYuan（思源笔记，简称 sy）CLI 工具，通过 cli-anythin
 - 操作笔记本 / 文档 / 块
 - 导出 Markdown
 - 查看待办 / 任务列表
+- **生成任务卡片 / 导出任务卡片 / 制作卡片** — 将文档中的清单/笔记转为 DynamicTodo 可导入的 JSON
 
 ## 安装
 
@@ -152,17 +153,22 @@ cli-anything-siyuan
 
 ## 任务卡片管理
 
-DynamicTodo 挂件的任务数据存储在块属性 `custom-tasks` 中，Agent 可通过 `cli-anything-siyuan` 读取/创建任务卡片。
+将文档中的清单/笔记转为 DynamicTodo 可导入的 JSON 文件。
+
+### 流程
+
+1. 用 `export md` 导出文档 markdown
+2. 解析清单项，按 `references/dynamic-todo-task-card.md` 的 JSON 格式生成
+3. 保存为 JSON 文件，告知用户路径
+4. **用户自己在 DynamicTodo 挂件中 ⚙️ → 导入数据**
+
+### 与挂件的关系
+
+- 插件只管理代码，**不包含任何用户数据**
+- 任务数据通过 JSON 文件导出，用户手动导入到指定挂件
+- 禁止直接通过 API 写入块属性
 
 参考 `references/dynamic-todo-task-card.md` 查看完整的 JSON 字段说明。
-
-```bash
-# 查看挂件块属性（含任务数据）
-cli-anything-siyuan block get <挂件块ID>
-
-# 定位 DynamicTodo 挂件
-cli-anything-siyuan search "DynamicTodo"
-```
 
 ## 常见操作示例
 
