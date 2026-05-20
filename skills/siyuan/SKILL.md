@@ -1,6 +1,6 @@
 ---
 name: siyuan
-description: SiYuan（思源笔记，简称 sy）CLI 工具，通过 cli-anything-siyuan 操作笔记本、文档、内容块，支持 SQL 查询和全文搜索。在用户提到思源笔记、sy、查询笔记内容、操作知识库时触发。
+description: SiYuan（思源笔记，简称 sy）CLI 工具，通过 cli-anything-siyuan 操作笔记本、文档、内容块，支持 SQL 查询和全文搜索。在用户提到 siyuan、思源、笔记、sy、查询笔记内容、操作知识库时触发。
 ---
 
 # SiYuan CLI (cli-anything-siyuan)
@@ -27,7 +27,7 @@ description: SiYuan（思源笔记，简称 sy）CLI 工具，通过 cli-anythin
 
 ## 触发条件
 
-- 思源 / SiYuan / sy / 笔记 / 知识库
+- siyuan / 思源 / 笔记 / sy / 知识库
 - 查询笔记内容 / 搜索笔记
 - 操作笔记本 / 文档 / 块
 - 导出 Markdown
@@ -149,6 +149,20 @@ cli-anything-siyuan
 - `Properties.title` — 文档标题
 - `Properties.type` — 类型（`doc` 文档）
 - `Children` — 块树
+
+## 任务卡片管理
+
+DynamicTodo 挂件的任务数据存储在块属性 `custom-tasks` 中，Agent 可通过 `cli-anything-siyuan` 读取/创建任务卡片。
+
+参考 `references/dynamic-todo-task-card.md` 查看完整的 JSON 字段说明。
+
+```bash
+# 查看挂件块属性（含任务数据）
+cli-anything-siyuan block get <挂件块ID>
+
+# 定位 DynamicTodo 挂件
+cli-anything-siyuan search "DynamicTodo"
+```
 
 ## 常见操作示例
 
