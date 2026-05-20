@@ -131,3 +131,13 @@ gh release create v0.2.0 \
 - 每次发布前检查 `widget.json` 中的 version 字段
 - **发布前先检查远程是否有相同版本号的 release**
 - **如果远程已有相同版本号，递增版本号后再发布，禁止删除已有 release**
+
+## ⚠️ 重要安全规则
+
+### 禁止提交任务数据
+
+**任何时候都不能将 DynamicTodo 任务卡片数据（custom-tasks 中的 JSON）提交或推送到 git。**
+
+- 任务数据包含用户的个人日程和待办，属于隐私数据
+- 执行 `git add`、`git commit`、`git push` 前，必须检查暂存区是否混入任务数据
+- 只提交代码文件（`.js`、`.css`、`.md` 等），绝不包括任务数据本身
