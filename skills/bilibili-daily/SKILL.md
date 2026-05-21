@@ -1,26 +1,25 @@
 ---
 name: bilibili-daily
-description: B站每日AI动态追踪。在用户提到 b站/bilibili/哔哩哔哩/视频大模型/Sora/CogVideo/语言大模型/LLM/检测模型/YOLO/llama.cpp/vllm/扩散模型/Stable Diffusion/每日AI日报 时触发。通过B站公开 API 搜索指定方向的最新视频，支持日报生成和关键词追踪。
+description: B站每日AI动态追踪。在用户提到 b站/bilibili/哔哩哔哩/bili/哔哩/开源大模型/DeepSeek/Qwen/LLaMA/Mistral/ChatGLM/GGUF/llama.cpp/vllm/视频生成/Open-Sora/CogVideo/扩散模型/Stable Diffusion/Flux/ComfyUI/每日AI日报 时触发。通过B站公开 API 搜索开源大模型相关的最新视频，支持日报生成和关键词追踪。
 ---
 
 # B站 AI 动态追踪 (bilibili-daily)
 
-通过 B站 公开 API 获取指定 AI 方向的最新视频资讯，生成每日动态日报。
+通过 B站 公开 API 获取开源大模型方向的最新视频资讯，生成每日动态日报。
 
-关注方向：
-- **视频大模型** (Sora, CogVideo, VideoCrafter, 视频生成)
-- **语言大模型** (LLM, GPT, 大模型, 指令微调)
-- **检测模型** (YOLO, DETR, GroundingDINO, SAM)
-- **llama.cpp** (量化, GGUF, 本地推理)
-- **vllm** (推理加速, 服务部署)
-- **扩散模型** (Stable Diffusion, Flux, DiT, 图像生成)
+关注方向（以开源大模型为核心）：
+- **开源大模型** (DeepSeek, Qwen, LLaMA, ChatGLM, Mistral, Gemma, Yi, Baichuan)
+- **推理部署** (llama.cpp, vllm, Ollama, GGUF, TensorRT-LLM)
+- **视频生成** (Open-Sora, CogVideo, VideoCrafter, LTX, Wan, 开源视频模型)
+- **图像生成** (Stable Diffusion, Flux, DiT, ComfyUI, 开源扩散模型)
+- **多模态** (LLaVA, DeepSeek-VL, Qwen-VL, 开源视觉语言模型)
 
 ## 触发条件
 
 用户提到以下关键词时触发：
-- b站 / bilibili / 哔哩哔哩
+- b站 / bilibili / 哔哩哔哩 / bili / 哔哩
 - "每日日报" / "今天有什么新视频" / "AI 动态"
-- 关注方向中的具体关键词（视频大模型、LLM、检测模型、llama.cpp、vllm、扩散模型等）
+- 关注方向中的具体关键词（开源大模型、DeepSeek、推理部署、llama.cpp、vllm、视频生成、扩散模型等）
 - "看看B站上XXX的最新进展"
 
 ## 核心流程
@@ -79,12 +78,11 @@ $hot.data | Select-Object show_name, keyword, status
 ```powershell
 # 核心方向配置
 $topics = @(
-    @{ name = "视频大模型"; keywords = @("视频大模型", "视频生成", "Sora", "CogVideo", "VideoCrafter", "文生视频") },
-    @{ name = "语言大模型"; keywords = @("大模型", "LLM", "语言模型", "微调", "RLHF", "GPT", "ChatGLM", "Qwen") },
-    @{ name = "检测模型"; keywords = @("目标检测", "YOLO", "DETR", "SAM", "GroundingDINO", "实例分割") },
-    @{ name = "llama.cpp"; keywords = @("llama.cpp", "GGUF", "量化", "本地推理", "llama") },
-    @{ name = "vllm"; keywords = @("vllm", "推理加速", "模型部署", "PagedAttention") },
-    @{ name = "扩散模型"; keywords = @("扩散模型", "Stable Diffusion", "Flux", "DiT", "图像生成", "ComfyUI") }
+    @{ name = "开源大模型"; keywords = @("开源大模型", "DeepSeek", "Qwen", "LLaMA", "ChatGLM", "Mistral", "Gemma", "开源LLM") },
+    @{ name = "推理部署"; keywords = @("llama.cpp", "vllm", "Ollama", "GGUF", "推理部署", "模型量化") },
+    @{ name = "视频生成"; keywords = @("视频生成", "Open-Sora", "CogVideo", "VideoCrafter", "文生视频", "开源视频模型", "LTX", "Wan") },
+    @{ name = "图像生成"; keywords = @("Stable Diffusion", "Flux", "DiT", "ComfyUI", "扩散模型", "图像生成") },
+    @{ name = "多模态"; keywords = @("多模态", "LLaVA", "视觉语言模型", "VLM", "DeepSeek-VL", "Qwen-VL") }
 )
 ```
 
@@ -93,7 +91,7 @@ $topics = @(
 2. 对每个关键词搜索按发布时间排序的最新视频
 3. 过滤出 24 小时内的结果
 4. 按方向分组输出结构化日报
-5. 结果写入 `E:\workspace\bilibili-daily\daily-report-YYYY-MM-DD.md`
+5. 结果写入 `E:\workspace\daily-report\bilibili-daily\daily-report-YYYY-MM-DD.md`
 
 ### 5. 深入查看单个视频
 
@@ -119,11 +117,11 @@ PowerShell 脚本，执行每日动态获取。功能：
 2. 对每个关键词搜索 B站 最新视频（按发布时间排序）
 3. 过滤出 24 小时内发布的结果
 4. 汇总去重后输出结构化日报
-5. 保存到 `E:\workspace\bilibili-daily\` 目录
+5. 保存到 `E:\workspace\daily-report\bilibili-daily\` 目录
 
 ### 输出目录
 
-日报文件保存到 `E:\workspace\bilibili-daily\`：
+日报文件保存到 `E:\workspace\daily-report\bilibili-daily\`：
 - `daily-report-YYYY-MM-DD.md` - 当日日报
 - `daily-report-YYYY-MM-DD.json` - 原始数据（可选）
 

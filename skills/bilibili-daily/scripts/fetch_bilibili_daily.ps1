@@ -31,31 +31,27 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-# 关注方向配置
+# 关注方向配置（以开源大模型为核心）
 $topics = @(
     @{
-        name = "视频大模型"
-        keywords = @("视频大模型", "视频生成", "Sora", "CogVideo", "VideoCrafter", "文生视频", "视频生成模型")
+        name = "开源大模型"
+        keywords = @("开源大模型", "DeepSeek", "Qwen", "LLaMA", "ChatGLM", "Mistral", "Gemma", "开源LLM")
     },
     @{
-        name = "语言大模型"
-        keywords = @("LLM", "语言模型", "大模型", "ChatGLM", "Qwen", "DeepSeek")
+        name = "推理部署"
+        keywords = @("llama.cpp", "vllm", "Ollama", "GGUF", "推理部署", "模型量化")
     },
     @{
-        name = "检测模型"
-        keywords = @("YOLO", "目标检测", "DETR", "SAM", "GroundingDINO", "实例分割", "检测模型")
+        name = "视频生成"
+        keywords = @("视频生成", "Open-Sora", "CogVideo", "VideoCrafter", "文生视频", "开源视频模型", "LTX", "Wan")
     },
     @{
-        name = "llama.cpp"
-        keywords = @("llama.cpp", "GGUF", "量化推理", "llama.cpp教程")
+        name = "图像生成"
+        keywords = @("Stable Diffusion", "Flux", "DiT", "ComfyUI", "扩散模型", "图像生成")
     },
     @{
-        name = "vllm"
-        keywords = @("vllm", "推理加速", "vLLM部署", "PagedAttention")
-    },
-    @{
-        name = "扩散模型"
-        keywords = @("扩散模型", "Stable Diffusion", "Flux", "DiT", "ComfyUI", "图像生成")
+        name = "多模态"
+        keywords = @("多模态", "LLaVA", "视觉语言模型", "VLM", "DeepSeek-VL", "Qwen-VL")
     }
 )
 
