@@ -9,6 +9,8 @@ Claude Code 技能合集仓库。
 | gitkb | `skills/gitkb/` | GitHub 仓库知识库 + HuggingFace/ModelScope 搜索 |
 | dockb | `skills/dockb/` | 本地文件知识库管理工具 |
 | siyuan | `skills/siyuan/` | 思源笔记 CLI 工具操作知识库 |
+| siyuan-publish | `skills/siyuan-publish/` | 思源笔记挂件发布到集市的工作流 |
+| bilibili-daily | `skills/bilibili-daily/` | B站 AI 方向每日动态追踪，生成日报 |
 
 ## 安装
 
@@ -18,7 +20,7 @@ Claude Code 技能合集仓库。
 # 注册仓库为插件市场
 /plugin marketplace add hito0512/claude-skills
 
-# 安装 hito-skills 插件（包含 gitkb、dockb、siyuan 三个技能）
+# 安装 hito-skills 插件（包含所有技能）
 /plugin install hito-skills@claude-skills
 
 # 安装后必须重载才能使用斜杠命令
