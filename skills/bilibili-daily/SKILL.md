@@ -39,12 +39,14 @@ $result.data.result | Select-Object title, author, play, video_review, pubdate, 
 - `play` - 播放量
 - `video_review` - 弹幕数
 - `pubdate` - 发布时间（Unix 时间戳）
-- `bvid` - BV 号（可通过 view API 获取详情）
+- `bvid` - BV 号，视频地址为 `https://www.bilibili.com/video/{bvid}`
 - `description` - 视频简介
 - `tag` - 标签
 - `pic` - 封面图 URL
 - `duration` - 视频时长（秒）
 - `mid` - UP 主 ID
+
+向用户呈现结果时，**每条视频必须附带可点击的 B站 地址**，格式为 `https://www.bilibili.com/video/{bvid}`。
 
 ### 2. 获取视频详情
 
