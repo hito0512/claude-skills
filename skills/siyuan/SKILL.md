@@ -1,5 +1,5 @@
 ---
-name: sy
+name: siyuan
 description: sy / siyuan（思源笔记）CLI 工具，通过 cli-anything-siyuan 操作笔记本、文档、内容块，支持 SQL 查询和全文搜索，生成任务卡片 JSON 供 DynamicTodo 导入。在用户提到 sy、siyuan、思源、笔记、任务卡片、制作卡片、查询笔记内容、操作知识库时触发。
 ---
 
