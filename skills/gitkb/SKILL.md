@@ -20,8 +20,6 @@ CLAUDE.md 文件见 `@E:\workspace\github\CLAUDE.md`
 
 ## 核心流程
 
-> **时效性规则**：所有搜索（GitHub / HuggingFace / ModelScope）默认限制在近一周内更新的内容。返回结果后应检查每个结果的更新日期，超过一个月的直接丢弃。如果结果不足，可放宽到两周，但绝不返回超过一个月的。
-
 ### 1. 查找本地仓库
 
 用户提到某个仓库时，先检查本地 `E:\workspace\github\` 中是否已存在：
@@ -52,17 +50,14 @@ git clone <repo-url>
 
 ### 4. 搜索 HuggingFace
 
-搜索 HuggingFace 上的模型。**注意**：搜索结果限制在近一周内更新的内容，超过一个月的忽略。
+搜索 HuggingFace 上的模型：
 
 ```powershell
-# 计算近一周的日期
-$weekAgo = (Get-Date).AddDays(-7).ToString("yyyy-MM-dd")
+# 通过 API 搜索模型
+Invoke-RestMethod "https://huggingface.co/api/models?search=<query>&sort=downloads&direction=-1&limit=10"
 
-# 通过 API 搜索模型（按最后更新排序，取近一周）
-Invoke-RestMethod "https://huggingface.co/api/models?search=<query>&sort=lastModified&direction=-1&limit=10"
-
-# 通过 API 搜索数据集（按最后更新排序，取近一周）
-Invoke-RestMethod "https://huggingface.co/api/datasets?search=<query>&sort=lastModified&direction=-1&limit=10"
+# 通过 API 搜索数据集
+Invoke-RestMethod "https://huggingface.co/api/datasets?search=<query>&sort=downloads&direction=-1&limit=10"
 
 # 获取模型详细信息
 Invoke-RestMethod "https://huggingface.co/api/models/<org>/<model-name>"
@@ -79,20 +74,16 @@ curl.exe -s "https://huggingface.co/<org>/<model-name>/raw/main/README.md"
 - `pipeline_tag` - 任务类型（text-generation, any-to-any, etc.）
 - `downloads` - 下载量
 - `likes` - 收藏数
-- `lastModified` - 最后更新时间（超过一个月的应忽略）
 - `config.model_type` - 架构类型
 - `tags` - 标签信息（custom_code 表示需要 trust_remote_code）
 
 ### 5. 搜索 ModelScope
 
-搜索 ModelScope（魔搭）上的模型。**注意**：搜索结果限制在近一周内更新的内容，超过一个月的忽略。
+搜索 ModelScope（魔搭）上的模型：
 
 ```powershell
-# 计算近一周日期
-$weekAgo = (Get-Date).AddDays(-7).ToString("yyyy-MM-dd")
-
-# 搜索模型（按最后更新排序）
-Invoke-RestMethod "https://www.modelscope.cn/api/v1/dso/list?name=<query>&PageSize=10&OrderBy=GmtModified&Order=DESC"
+# 搜索模型
+Invoke-RestMethod "https://www.modelscope.cn/api/v1/dso/list?name=<query>&PageSize=10"
 
 # 或通过 modelscope SDK
 pip install modelscope
@@ -101,18 +92,15 @@ from modelscope.hub.sdk import Hub
 
 ### 6. 搜索 GitHub（当本地没有时）
 
-优先用 `gh` 命令搜索 GitHub。**注意**：搜索结果限制在近一周内更新的内容，超过一个月的忽略。
+优先用 `gh` 命令搜索 GitHub：
 
 ```powershell
-# 计算近一周的日期（PowerShell）
-$weekAgo = (Get-Date).AddDays(-7).ToString("yyyy-MM-dd")
+# 搜索仓库
+gh search repos "<query>"
 
-# 搜索仓库（近一周更新）
-gh search repos "<query>" --updated=">=$weekAgo"
-
-# 搜索 issue / PR（近一周更新）
-gh search issues "<query>" --repo <owner>/<repo> --updated=">=$weekAgo"
-gh search prs "<query>" --repo <owner>/<repo> --updated=">=$weekAgo"
+# 搜索 issue / PR
+gh search issues "<query>" --repo <owner>/<repo>
+gh search prs "<query>" --repo <owner>/<repo>
 
 # 查看 issue / PR 详情
 gh issue view <number> -R <owner>/<repo>
@@ -125,14 +113,11 @@ gh repo view <owner>/<repo>
 如果 `gh` 命令不可用或未登录，用 `curl` 代替：
 
 ```powershell
-# 计算近一周的日期（Bash）
-$weekAgo = $(date -d "7 days ago" +%Y-%m-%d 2>/dev/null) || $(Get-Date).AddDays(-7).ToString("yyyy-MM-dd")
+# 搜索仓库 (GitHub API)
+curl.exe -s "https://api.github.com/search/repositories?q=<query>"
 
-# 搜索仓库（近一周更新，GitHub API）
-curl.exe -s "https://api.github.com/search/repositories?q=<query>+pushed:>=$weekAgo"
-
-# 搜索 issue（近一周更新）
-curl.exe -s "https://api.github.com/search/issues?q=repo:<owner>/<repo>+<query>+updated:>=$weekAgo"
+# 搜索 issue
+curl.exe -s "https://api.github.com/search/issues?q=repo:<owner>/<repo>+<query>"
 
 # 查看仓库详情
 curl.exe -s "https://api.github.com/repos/<owner>/<repo>"
