@@ -11,6 +11,11 @@ description: sy / siyuan（思源笔记）CLI 工具，通过 cli-anything-siyua
 **CLI 位置**：`E:\workspace\github\siyuan\agent-harness`
 **数据目录**：`~/SiYuan/data`（默认为用户目录下的 SiYuan/data）
 
+**默认工作笔记本**：`20260513182353-dyhn4jz`
+- 所有 agent 默认在此笔记本下操作，除非用户明确指定其他位置
+- 所有记录/创建/写入操作默认在此笔记本中进行
+- 切换到其他笔记本前必须先询问用户
+
 ## 核心原则
 
 ### ⚠️ 绝对禁止自动删除任何内容
