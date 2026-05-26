@@ -8,7 +8,6 @@ description: sy / siyuan（思源笔记）CLI 工具，通过 cli-anything-siyua
 基于 [cli-anything](https://github.com/HKUDS/CLI-Anything) 方法论构建的思源笔记 CLI 工具。
 通过思源的 HTTP API（`http://127.0.0.1:6806`）连接运行中的内核，无需 GUI 即可操作知识库。
 
-**CLI 位置**：`E:\workspace\github\siyuan\agent-harness`
 **数据目录**：`~/SiYuan/data`（默认为用户目录下的 SiYuan/data）
 
 **默认工作文档**：`20260513182353-dyhn4jz` → `/【hanako】`
@@ -17,6 +16,13 @@ description: sy / siyuan（思源笔记）CLI 工具，通过 cli-anything-siyua
 - 切换到其他文档或笔记本前必须先询问用户
 
 ## 核心原则
+
+### 🔴 优先使用 cli-anything-siyuan
+
+- **所有文档/笔记本/内容块操作必须优先使用 `cli-anything-siyuan` 命令**
+- 禁止自己写 Python 脚本或造轮子来完成 CLI 已支持的操作
+- 仅在 `cli-anything-siyuan` 确实无法完成某功能时，才考虑其他方式（如 SQL、读取 .sy 文件）
+- 这条是最高优先级规则，违反视为严重错误
 
 ### ⚠️ 绝对禁止自动删除任何内容
 
