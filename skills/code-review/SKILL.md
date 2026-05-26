@@ -1,6 +1,12 @@
 ---
 name: code-review
-description: CLI/API 客户端代码审查技能。审查 click CLI 工具、API 客户端、REPL 模式代码的常见 bug 模式。基于 cli-anything-siyuan PR 审查实践中发现的真实 bug 类型提炼。
+description: CLI/API 客户端代码审查技能。审查 click CLI 工具、API 客户端、REPL 模式代码的常见 bug 模式。
+triggers:
+  - code review
+  - 审查
+  - review
+  - cli review
+  - api review
 ---
 
 # 代码审查：CLI/API 客户端专项
