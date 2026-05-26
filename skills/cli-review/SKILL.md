@@ -1,21 +1,21 @@
 ---
-name: code-review
-description: CLI/API 客户端代码审查技能。审查 click CLI 工具、API 客户端、REPL 模式代码的常见 bug 模式。
+name: cli-review
+description: CLI/API 客户端专项代码审查技能。审查 click CLI 工具、API 客户端、REPL 模式代码的常见 bug 模式。
 triggers:
-  - code review
-  - review
-  - 审查
-  - 代码审查
-  - cli审查
   - cli review
+  - cli-review
+  - cli审查
+  - click
   - api review
-  - pr review
-  - bug
+  - repl
+  - cli bug
 ---
 
-# 代码审查：CLI/API 客户端专项
+# CLI 代码审查：CLI/API 客户端专项
 
 审查 cli-anything 风格的 Python CLI 工具（click + requests + REPL）时，按以下清单逐项检查。
+
+**通用原则：审查时必须查看所有可用的反馈来源 — file-level review comments、issue-level comments、PR 页面上的全部信息。遗漏任何来源都可能导致问题未被发现。**
 
 ## 审查清单
 
@@ -93,6 +93,8 @@ def block_insert(data, previous="", parent=""):
 **检查点：**
 - [ ] 每个 CLI 命令调用 API 前，检查 **所有必要参数是否已提供**
 - [ ] 可选参数全部为空时是否会静默传递无效值到 API
+- [ ] API 支持的所有参数是否都暴露为 CLI option（例如 `insertBlock` 有 parent/previous/next 三个锚点，CLI 不能只提供前两个）
+- [ ] REPL 路径和 CLI 路径的验证逻辑要一致，REPL 不能绕开验证
 - [ ] 使用 `click.UsageError` 给出清晰的用户错误消息
 
 ### 5. 异常处理 — exception handling
