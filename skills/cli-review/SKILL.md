@@ -138,10 +138,89 @@ info = {"connected": connected}
 - [ ] `status` 类命令是否使用 **实时检测** 而非缓存状态
 - [ ] session state 中是否有字段被初始化但 **从未被更新**
 
-### 7. 测试覆盖 — test coverage
+### 7. Click Context 对象访问 — context object access
+
+`@click.pass_context` 传递的是 `click.Context`，自定义 context 类必须通过 `ctx.obj` 访问。
+
+```python
+# ❌ 错误：直接访问 ctx 上的属性
+@click.pass_context
+def repl(ctx):
+    ctx.session.flush()  # ctx 是 click.Context，没有 .session 属性
+
+# ✅ 正确：通过 ctx.obj 访问
+@click.pass_context
+def repl(ctx):
+    ctx.obj.session.flush()  # ctx.obj 是 SiYuanContext，有 .session 属性
+```
+
+**检查点：**
+- [ ] `@click.pass_context` 的函数内，所有自定义属性访问是否通过 `ctx.obj.xxx`
+- [ ] `@click.pass_obj` 直接传递 `ctx.obj`，不需要 `ctx.` 前缀
+
+### 8. 配置加载回退 — config fallback chain
+
+配置加载应有完整的回退链：显式路径 → 环境变量 → 默认值。配置文件损坏时不能直接跳到默认值，应回退到环境变量。
+
+```python
+# ❌ 错误：配置文件损坏时跳过环境变量
+if config_file.exists():
+    try:
+        data = json.loads(...)
+    except JSONDecodeError:
+        data = {}  # 直接给空 dict，跳过了环境变量
+    return Config(host=data.get("host", "127.0.0.1"), ...)
+
+# ✅ 正确：损坏时回退到环境变量
+if config_file.exists():
+    try:
+        data = json.loads(...)
+    except JSONDecodeError:
+        data = None  # 标记为损坏
+
+    if data is not None:
+        return Config(host=data.get("host", ...), ...)
+
+# 环境变量回退
+return Config(
+    host=os.environ.get("SIYUAN_HOST", "127.0.0.1"),
+    ...
+)
+```
+
+**检查点：**
+- [ ] 配置文件加载的逻辑是否 **有三层回退**：config file → env vars → defaults
+- [ ] 配置文件存在但 **内容损坏时** 是否正确地 fall through 到 env var 层，而不是直接跳到默认值
+
+### 9. API 错误转换为用户友好消息 — global API error handling
+
+API 客户端抛出的异常（如 `SiYuanClientError`）应统一转换为 `Error: <message>` 而非裸 Python traceback。通过自定义 Click Group 实现全局捕获。
+
+```python
+# ✅ 正确：自定义 Click Group 统一捕获
+class _CatchErrors(click.Group):
+    def invoke(self, ctx):
+        try:
+            return super().invoke(ctx)
+        except ClientError as e:
+            click.echo(f"Error: {e}", err=True)
+            sys.exit(1)
+
+@click.group(cls=_CatchErrors, invoke_without_command=True)
+def cli():
+    ...
+```
+
+**检查点：**
+- [ ] one-shot CLI 命令中 API 异常 → `Error: <message>` 而非 traceback
+- [ ] REPL 路径是否也捕获了同样的异常（通常通过 `try/except` 在 REPL loop 中）
+- [ ] 两种模式（one-shot 和 REPL）的异常处理行为一致
+
+### 10. 测试覆盖 — test coverage
 
 **检查点：**
 - [ ] 每个 CLI 命令至少有一个单元测试（mock client）
 - [ ] mock 测试要覆盖 **list 和 dict 两种 API 返回格式**
 - [ ] 空结果、错误情况也要有测试
 - [ ] `--json` 输出模式要单独测试
+- [ ] 参数验证边界（缺少必填参数、空值传递）要有测试
