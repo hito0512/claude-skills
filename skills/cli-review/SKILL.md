@@ -40,7 +40,7 @@ for r in items:
 - [ ] 每个调用 API 的地方，检查 **实际 API 响应格式**（看文档或抓包），不要信类型注解
 - [ ] `_post` 返回的是 `body.get("data")`，而 `data` 可能嵌套（`{notebook: {...}}`、`{files: [...]}`、`{tree: [...]}`、`{blocks: [...]}`）
 - [ ] 遍历结果前必须做 **归一化处理**：`items = data.get("key", []) if isinstance(data, dict) else data`
-- [ ] `doc list` → `data.files`、`doc tree` → `data.tree`、`search` → `data.blocks`、`create_notebook` → `data.notebook`
+- [ ] `doc list` → `data.files`、`doc tree` → `data.files`、`search` → `data.blocks`、`create_notebook` → `data.notebook`
 
 ### 2. 参数语义 — argument semantics
 
@@ -138,7 +138,27 @@ info = {"connected": connected}
 - [ ] `status` 类命令是否使用 **实时检测** 而非缓存状态
 - [ ] session state 中是否有字段被初始化但 **从未被更新**
 
-### 7. Click Context 对象访问 — context object access
+### 7. API 分页/截断限制 — pagination & response caps
+
+有些 API 有内置的返回数量限制（如 SiYuan 的 `Conf.FileTree.MaxListCount`），超过时静默截断结果，需要传特定参数来获取完整数据。
+
+```python
+# ❌ 错误：没有传解除限制的参数
+def get_tags():
+    return _post("/api/tag/getTag", {})
+# 标签超过 MaxListCount 时静默缺失
+
+# ✅ 正确：传解除限制的参数
+def get_tags():
+    return _post("/api/tag/getTag", {"ignoreMaxListHint": True})
+```
+
+**检查点：**
+- [ ] 每个列表类 API 是否有 **分页参数**（limit/offset）或 **截断标志**（ignoreMaxListHint 等）
+- [ ] API 文档中是否有 `MaxListCount`、`pageSize`、`maxEntries` 等限制说明
+- [ ] 默认值是否满足真实使用场景，不满足时是否需要传额外参数
+
+### 8. Click Context 对象访问 — context object access
 
 `@click.pass_context` 传递的是 `click.Context`，自定义 context 类必须通过 `ctx.obj` 访问。
 
@@ -158,7 +178,7 @@ def repl(ctx):
 - [ ] `@click.pass_context` 的函数内，所有自定义属性访问是否通过 `ctx.obj.xxx`
 - [ ] `@click.pass_obj` 直接传递 `ctx.obj`，不需要 `ctx.` 前缀
 
-### 8. 配置加载回退 — config fallback chain
+### 9. 配置加载回退 — config fallback chain
 
 配置加载应有完整的回退链：显式路径 → 环境变量 → 默认值。配置文件损坏时不能直接跳到默认值，应回退到环境变量。
 
@@ -192,7 +212,7 @@ return Config(
 - [ ] 配置文件加载的逻辑是否 **有三层回退**：config file → env vars → defaults
 - [ ] 配置文件存在但 **内容损坏时** 是否正确地 fall through 到 env var 层，而不是直接跳到默认值
 
-### 9. API 错误转换为用户友好消息 — global API error handling
+### 10. API 错误转换为用户友好消息 — global API error handling
 
 API 客户端抛出的异常（如 `SiYuanClientError`）应统一转换为 `Error: <message>` 而非裸 Python traceback。通过自定义 Click Group 实现全局捕获。
 
@@ -216,7 +236,7 @@ def cli():
 - [ ] REPL 路径是否也捕获了同样的异常（通常通过 `try/except` 在 REPL loop 中）
 - [ ] 两种模式（one-shot 和 REPL）的异常处理行为一致
 
-### 10. 测试覆盖 — test coverage
+### 11. 测试覆盖 — test coverage
 
 **检查点：**
 - [ ] 每个 CLI 命令至少有一个单元测试（mock client）
