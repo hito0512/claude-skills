@@ -153,7 +153,7 @@ cli-anything-drawio connect add --help
 # 连线使用 orthogonal 样式，自动走直角路径
 
 # 5. 导出 PNG（超清：scale=2，边框 20px）
-& "C:\QuickTools\cli-anything\cli-anything-drawio.exe" --session my-sess --project "图表.drawio" export render "图表.png" --crop --border 20 --scale 2 --overwrite
+& "C:\QuickTools\cli-anything\cli-anything-drawio.exe" --session my-sess --project "图表.drawio" export render "图表.png" --crop --border 20 --scale 3 --overwrite
 
 # 6. 用桌面应用打开验证（可选）
 Start-Process "C:\Program Files\draw.io\draw.io.exe" -ArgumentList "图表.drawio"
@@ -170,16 +170,16 @@ Start-Process "C:\Program Files\draw.io\draw.io.exe" -ArgumentList "图表.drawi
 | `-f png` | 格式（默认 PNG） |
 | `--crop` | 裁剪到内容边界 |
 | `--border 20` | 边框留白宽度（像素） |
-| `--scale 2` | 缩放倍数（2x 超清，默认） |
+| `--scale 3` | 缩放倍数（3x 超清，默认） |
 | `--transparent` | 透明背景 |
 | `--overwrite` | 覆盖已有文件 |
 
 ```powershell
 # 标准导出（PNG + 裁剪 + 超清 2x + 边框 20px）
-& "C:\QuickTools\cli-anything\cli-anything-drawio.exe" export render "输出.png" --crop --border 20 --scale 2 --overwrite
-
-# 更高清（3x 缩放）
 & "C:\QuickTools\cli-anything\cli-anything-drawio.exe" export render "输出.png" --crop --border 20 --scale 3 --overwrite
+
+# 更高清（4x 缩放）
+& "C:\QuickTools\cli-anything\cli-anything-drawio.exe" export render "输出.png" --crop --border 20 --scale 4 --overwrite
 
 # PDF 导出
 & "C:\QuickTools\cli-anything\cli-anything-drawio.exe" export render "输出.pdf" -f pdf --crop --overwrite
