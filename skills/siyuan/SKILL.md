@@ -1,36 +1,28 @@
 ---
 name: siyuan
-description: sy / siyuan（思源笔记）CLI 工具，通过 cli-anything-siyuan 操作笔记本、文档、内容块，支持 SQL 查询和全文搜索，生成任务卡片 JSON 供 DynamicTodo 导入。在用户提到 sy、siyuan、思源、笔记、任务卡片、制作卡片、查询笔记内容、操作知识库时触发。
+description: SiYuan（思源笔记，简称 sy）CLI 工具，通过 cli-anything-siyuan 操作笔记本、文档、内容块，支持 SQL 查询和全文搜索，生成任务卡片 JSON 供 DynamicTodo 导入。在用户提到 siyuan、思源、笔记、sy、任务卡片、制作卡片、查询笔记内容、操作知识库时触发。
+success_criteria:
+  - 命令 exit code 为 0
+  - 返回结果不为空
+  - 输出格式符合预期（JSON 或可读文本）
 ---
+
 
 # SiYuan CLI (cli-anything-siyuan)
 
 基于 [cli-anything](https://github.com/HKUDS/CLI-Anything) 方法论构建的思源笔记 CLI 工具。
 通过思源的 HTTP API（`http://127.0.0.1:6806`）连接运行中的内核，无需 GUI 即可操作知识库。
 
+**CLI 位置**：`E:\workspace\github\CLI-Anything\siyuan\agent-harness`
 **数据目录**：`~/SiYuan/data`（默认为用户目录下的 SiYuan/data）
-
-**默认工作文档**：`20260513182353-dyhn4jz` → `/【hanako】`
-- 所有 agent 默认在此文档下操作，除非用户明确指定其他位置
-- 所有记录/创建/写入操作默认在此文档中进行
-- 切换到其他文档或笔记本前必须先询问用户
 
 ## 核心原则
 
-### 🔴 优先使用 cli-anything-siyuan
+### ⚠️ 绝对禁止自动删除任何文件
 
-- **所有文档/笔记本/内容块操作必须优先使用 `cli-anything-siyuan` 命令**
-- 禁止自己写 Python 脚本或造轮子来完成 CLI 已支持的操作
-- 仅在 `cli-anything-siyuan` 确实无法完成某功能时，才考虑其他方式（如 SQL、读取 .sy 文件）
-- 这条是最高优先级规则，违反视为严重错误
-
-### ⚠️ 绝对禁止自动删除任何内容
-
-- 不允许自动执行任何删除/移除操作（`remove`、`delete`、`rename`、`update`、覆盖写入）
-- 即使你觉得是安全的或用户可能需要的，也不允许自动删除
-- 所有破坏性操作**必须**先询问用户，得到明确同意后才可执行
-- 删除操作必须添加 `--dangerous` 标记以显式确认，且仍要先问用户
-- 违反此规则视为严重错误
+- 任何删除/移除操作（`remove`、`delete`）**必须**经用户明确确认后才可执行
+- 禁止在未告知用户的情况下自动执行破坏性操作
+- 删除操作需添加 `--dangerous` 标记以显式确认
 
 ### 📝 输出必须用文档标题，禁止裸 ID
 
@@ -54,8 +46,8 @@ description: sy / siyuan（思源笔记）CLI 工具，通过 cli-anything-siyua
 
 如需重新安装：
 ```bash
-cd E:\workspace\github\siyuan\agent-harness
-pip install -e ".[repl]"
+cd E:\workspace\github\CLI-Anything\siyuan\agent-harness
+pip install -e "."
 ```
 
 ## 配置
@@ -95,6 +87,16 @@ find ~/SiYuan/data -name "*<ID>*.sy"
 cat "~/SiYuan/data\<notebook-id>\.siyuan\conf.json"
 ```
 
+## 执行自检协议
+
+每条命令执行后立即对照 `success_criteria` 逐条检查：
+
+1. **exit code 不为 0** → 直接截取 stderr 报错并终止本次调用
+2. **返回结果为空** → 重试一次，仍为空则报"无输出"
+3. **三条全过** → 标记本次调用完成
+
+---
+
 ## 命令参考
 
 ### 笔记本管理
@@ -121,8 +123,8 @@ cat "~/SiYuan/data\<notebook-id>\.siyuan\conf.json"
 |------|------|
 | `cli-anything-siyuan block get <block-id>` | 查看块源码 |
 | `cli-anything-siyuan block children <block-id>` | 查看子块 |
-| `cli-anything-siyuan block insert <data>` | 插入块 |
-| `cli-anything-siyuan block update <id> <data>` | 更新块 |
+| `cli-anything-siyuan block insert <data> [--parent / --previous / --next]` | 插入块（data 支持 stdin 管道：`cat file \| cli-anything-siyuan block insert --parent <id>`） |
+| `cli-anything-siyuan block update <id> <data>` | 更新块（data 支持 stdin 管道） |
 | `cli-anything-siyuan block delete <id>` | 删除块（需 `--dangerous` 确认） |
 
 ### 搜索与查询
@@ -131,7 +133,7 @@ cat "~/SiYuan/data\<notebook-id>\.siyuan\conf.json"
 | `cli-anything-siyuan search <query>` | 全文搜索（结果显示标题 + 内容片段） |
 | `cli-anything-siyuan sql <stmt>` | SQL 查询 |
 | `cli-anything-siyuan export md <doc-id>` | 导出 Markdown |
-| `cli-anything-siyuan tag list` | 标签列表 |
+| `cli-anything-siyuan tag list` | 标签列表（返回所有标签，不受 MaxListCount 限制） |
 
 ### 系统
 | 命令 | 说明 |
@@ -204,6 +206,12 @@ cli-anything-siyuan export md <doc-id>
 
 # 6. JSON 格式输出
 cli-anything-siyuan --json search "meeting"
+
+# 7. 插入多行内容（管道从文件读取）
+cat ~/note.md | cli-anything-siyuan block insert --parent <block-id>
+
+# 8. 更新块内容（管道）
+echo "# New Title" | cli-anything-siyuan block update <block-id>
 ```
 
 ## 注意事项
@@ -211,8 +219,10 @@ cli-anything-siyuan --json search "meeting"
 - 思源必须在运行状态，CLI 通过 HTTP API 连接
 - API Token 在思源「设置 - 关于」中查看
 - 默认端口 6806
-- **禁止未经同意执行任何删除/修改操作** — 必须先询问，用户确认 + `--dangerous` 标记
+- **禁止自动执行删除操作** — 必须用户确认 + `--dangerous` 标记
 - **所有输出必须显示标题/名称**，禁止裸 ID
 - 发布的模式下禁止 SQL 查询接口
+- API 错误会显示 `Error: <消息>` 而非 traceback
+- 配置文件损坏时自动回退到环境变量
 - 通过 `find ~/SiYuan/data -name "*<ID>*.sy"` 可通过 ID 反查文件位置
 - 通过读取 `.sy` 文件的 `Properties.title` 可获取文档标题
