@@ -236,7 +236,159 @@ def cli():
 - [ ] REPL 路径是否也捕获了同样的异常（通常通过 `try/except` 在 REPL loop 中）
 - [ ] 两种模式（one-shot 和 REPL）的异常处理行为一致
 
-### 11. 测试覆盖 — test coverage
+### 11. 部分状态更新 — partial state update
+
+更新一个字段时，关联字段可能未被同步更新，导致 UI/状态显示 stale 数据。
+
+```python
+# ❌ 错误：只更新了 ID，关联的 name 还是旧的
+session.update(current_notebook_id=new_id)
+session.flush()
+# status 命令显示的还是旧的 notebook name
+
+# ✅ 正确：同时更新关联字段
+for nb in client.list_notebooks():
+    if nb["id"] == new_id:
+        name = nb["name"]
+        break
+session.update(current_notebook_id=new_id, current_notebook_name=name)
+session.flush()
+```
+
+**检查点：**
+- [ ] 每次 `session.update()` 或状态变更时，所有 **关联的展示字段** 是否同步更新
+- [ ] 是否存在一个字段变了但另一个依赖它的字段还是旧值的情况
+- [ ] `status` 命令、REPL 提示符等依赖 session state 的展示是否可能显示过期数据
+
+### 12. 递归/层级数据输出 — hierarchical data display
+
+API 返回层级结构（如标签的 `children`、文档树）时，text 输出只遍历了顶层，遗漏嵌套内容。
+
+```python
+# ❌ 错误：只输出顶层
+for t in tags:
+    print(f"{t['name']} ({t['count']})")
+# 忽略了 t.get("children", []) 中的嵌套标签
+
+# ✅ 正确：递归遍历
+def print_tags(tags, indent=0):
+    for t in tags:
+        print(f"{'  '*indent}{t['name']} ({t['count']})")
+        if t.get("children"):
+            print_tags(t["children"], indent + 1)
+```
+
+**检查点：**
+- [ ] 数据有 `children`、`subItems`、`entries` 等嵌套字段时，text 输出是否递归遍历
+- [ ] `--json` 模式和 text 模式的输出完整性是否一致（json 包含嵌套数据，text 不能只显示顶层）
+- [ ] 缩进格式是否清晰（每层 2 空格，不超出终端宽度）
+
+### 13. 开发模式 CLI 回退路径 — dev fallback module resolution
+
+测试框架中通过 `python -m <module>` 回退到开发模式时，必须指向带 `__main__.py` 的可执行包，不能指向不可直接运行的模块。
+
+```python
+# ❌ 错误：指向不可执行的模块
+name = "cli-anything-siyuan"
+module = name.replace("cli-anything-", "cli_anything.") + "." + name.split("-")[-1] + "_cli"
+# → "cli_anything.siyuan.siyuan_cli" (没有 if __name__ == "__main__")
+
+# ✅ 正确：指向带 __main__.py 的包
+module = name.replace("cli-anything-", "cli_anything.")
+# → "cli_anything.siyuan" (有 __main__.py 调用 cli())
+```
+
+**检查点：**
+- [ ] `_resolve_cli` 的 `python -m` 回退路径是否指向 **包路径** 而非模块路径
+- [ ] 目标包是否有 `__main__.py` 且正确调用入口函数
+- [ ] 所有 CLI 工具的测试文件（`test_full_e2e.py`）是否都有相同的回退逻辑
+
+### 14. 技能/文档示例与 CLI 签名一致 — doc example alignment
+
+SKILL.md 或 README 中的示例必须和 CLI 实际定义的参数签名保持一致，否则 AI agent 会生成错误命令。
+
+```markdown
+# ❌ 错误：示例用了位置参数，但 CLI 需要 --md 标志
+cli-anything-siyuan doc create nb1 /projects/new "## Title\n\nContent"
+
+# ✅ 正确：示例和 CLI 实际签名一致
+cli-anything-siyuan doc create nb1 /projects/new --md "## Title\n\nContent"
+```
+
+**检查点：**
+- [ ] 所有技能/文档示例是否与 `@click.option`/`@click.argument` 的实际定义一致
+- [ ] 示例中的参数是 `--flag` 形式还是位置参数，检查 CLI 实际接受哪种
+- [ ] AI agent 可能按示例模式生成命令，错误的示例会导致错误的行为
+
+### 15. 序列化格式匹配 — serialization format compatibility
+
+当 CLI 操作文件格式（.prg、.drawio、.md 等）时，序列化格式必须和消费方（GUI 应用、其他工具）完全一致，否则文件无法被正确打开。
+
+```python
+# ❌ 错误：使用内部简化的序列化格式，与 GUI 不兼容
+write_prg(path, {"stage": [
+    {"_": "TextNode", "uuid": "...", "location": [x, y], "type": "core:text_node"}
+]})
+# GUI 期望 collisionBox + associationList + Color/Vector 对象格式
+
+# ✅ 正确：在写文件时转换为消费方期望的格式
+def write_prg(path, data):
+    stage = _convert_to_gui_format(data["stage"])  # 转换格式
+    # ... 写入转换后的数据
+```
+
+**检查点：**
+- [ ] CLI 操作的文件格式是否与对应的 **桌面/Web 应用** 完全兼容
+- [ ] 差异不能被忽略——即使 msgpack 包结构一样，内部字段 schema 不同也会导致打不开
+- [ ] 如存在格式差异，应在读写时做 **双向转换**（内部格式 ↔ 序列化格式）
+- [ ] 添加 **thumbnail.png** 等 GUI 期望的辅助文件
+- [ ] 添加对应的 e2e 测试（CLI 生成文件 → GUI 打开验证）
+
+### 16. 后端 CLI 工具可用性 — backend CLI dependency
+
+CLI 工具依赖外部 CLI 后端（如 draw.io desktop 的 `draw.io --export`）时，需确保能找到后端并给出清晰提示。
+
+```python
+# ❌ 错误：假设后端在 PATH 中
+subprocess.run(["draw.io", "--export", ...])
+
+# ✅ 正确：查找 + 清晰错误
+def find_drawio():
+    candidates = ["draw.io", "drawio", "draw.io.exe"]
+    for name in candidates:
+        path = shutil.which(name)
+        if path:
+            return path
+    raise RuntimeError("draw.io 未安装。安装：winget install JGraph.Draw")
+```
+
+**检查点：**
+- [ ] 后端 CLI 是否在 PATH 中，或通过 `shutil.which()` 查找
+- [ ] 后端未安装时是否给出 **安装指引**（平台对应命令）
+- [ ] 有 **fallback 逻辑**（后端不可用时保存文件 + 提示手动处理）
+
+### 17. 导出参数完整性 — export option completeness
+
+CLI 包装后端导出功能时，后端支持的参数（scale、border、crop、transparent 等）应全部暴露。
+
+```python
+# ❌ 错误：后端支持 border 但 CLI 未暴露
+def render(output_path, fmt="png", scale=None, crop=False):
+    # backend: draw.io --export in.drawio -o out.png --border 20
+    # CLI 没有 --border 选项，用户无法控制边框宽度
+    pass
+
+# ✅ 正确：暴露所有后端支持的参数
+def render(output_path, fmt="png", scale=None, crop=False, border=0):
+    pass
+```
+
+**检查点：**
+- [ ] CLI 的 export 命令是否暴露了后端的 **全部有用参数**
+- [ ] 检查 `drawio_backend.py` 等实际后端代码，确认参数有没有遗漏
+- [ ] 参数默认值是否合理（如 scale=3 超清、border=20 边框）
+
+### 18. 测试覆盖 — test coverage
 
 **检查点：**
 - [ ] 每个 CLI 命令至少有一个单元测试（mock client）
