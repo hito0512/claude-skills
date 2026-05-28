@@ -79,34 +79,43 @@ cli-anything-drawio connect add --help
 孙y_j = 孙起始y + j * (孙高 + 间距)
 ```
 
-#### 模板 2：垂直单行树形图（根在上，子在下）— 首层 ≤5 子节点
+#### 模板 2：垂直树形图（根在上，子在下 + 链式子项）— 推荐
 
-首层子节点在同一水平行上。子节点可在下方继续垂直展开。
+首层子节点在同一水平行上。每个子节点下方用**链式垂直展开**子项——每个子项只连到上一个，不集中连到父节点，避免连线穿过其他节点。
 
 ```
-        根节点 (居中, y=30~50)
-              │
-    ┌────┬────┬────┬────┐
-   子1  子2  子3  子4  子5
-   /\
-子11 子12           子51 子52 子53
+        根节点 (居中, y=30~55)
+              │ orthogonal
+    ┌────┬────┬────┬────┬────┬────┐
+   子1  子2  子3  子4  子5  子6   ← 一列横排
+    │    │    │    │    │    │      orthogonal
+   子11 子21 子31 子41 子51 子61   ← 链式：父→第1子项
+    │    │    │    │    │    │      orthogonal 垂直
+   子12 子22 子32 子42 子52 子62   ← 链式：子项1→子项2
+    │    │    │    │    │    │
+   子13 子23 子33 子43 子53 子63   ← 链式依次连接
 ```
 
 排布公式：
 
 ```python
-节点高度 = 50, 间距 = 30
+节点高度 = 50, 子项高度 = 40, 子项间距 = 75 (中心距, 间隙35)
 
 # 第一层：水平展开
-总宽度 = Σ(子i宽度) + (N-1) * 间距
+总宽度 = Σ(子i宽度) + (N-1) * 列间距
 起始x = (画布宽度 - 总宽度) / 2
-子i的x = 起始x + Σ(前i-1宽度) + i * 间距
-子i的y = 根y + 根高 + 垂直间距(≈80)
+子i的x = 起始x + Σ(前i-1宽度) + i * 列间距
+子i的y = 根y + 根高 + 垂直间距(≈50)
 
-# 第二层：在父节点下方垂直展开
-孙j的x = 父x + (父宽 - 孙宽) / 2   # 在父节点下方居中
-孙j的y = 父y + 父高 + 行间距 + j * (孙高 + 行间距)
-```
+# 第二层：在父节点下方链式展开（每个子项只连到上一个）
+子项j的x = 父x + (父宽 - 子项宽) / 2   # 在父节点下方居中
+子项j的y = 父y + 父高 + 行间距 + j * (子项高 + 子项间距 - 子项高)
+         = 父y + 父高 + 行间距 + j * 75   # j = 0, 1, 2, ...
+
+# 连线规则（关键）：
+# ❌ 不要：所有子项都连到父节点（连线会穿过中间子项）
+# ✅ 正确：父→第1子项, 第1子项→第2子项, ...（链式，只连相邻）
+# 全部使用 orthogonal 样式，禁止 straight（斜线会穿透）
 
 #### 模板 3：垂直单列 + 子树展开
 
@@ -135,24 +144,38 @@ cli-anything-drawio connect add --help
 孙j的y = 孙起始y + j * (孙高 + 间距)
 ```
 
-## 完整工作流示例
+## 完整工作流示例（垂直树形 + 子项税额式连接）
 
 ```powershell
 # 1. 确定布局：文本宽度 ≈ 字数 × 16px，计算总宽度确保不溢出画布
 # 2. 创建项目
-& "C:\QuickTools\cli-anything\cli-anything-drawio.exe" --session my-sess project new -o "图表.drawio"
+& "C:\QuickTools\cli-anything\cli-anything-drawio.exe" --session my-sess project new -o "图表.drawio" --width 1400 --height 900
 
 # 3. 添加所有形状（按布局计算 x,y）
-& "C:\QuickTools\cli-anything\cli-anything-drawio.exe" --session my-sess --project "图表.drawio" shape add rounded -l "根节点" --x 325 --y 30 -w 200 -h 50
+# 先加根节点
+& "C:\QuickTools\cli-anything\cli-anything-drawio.exe" --session my-sess --project "图表.drawio" shape add rounded -l "根节点" --x 520 --y 30 -w 280 -h 55
 
-# 为每个子节点执行 shape add
-# shape add 返回的 id 用于后续连线
+# 再加所有子节点（横排）
+& "C:\QuickTools\cli-anything\cli-anything-drawio.exe" --session my-sess --project "图表.drawio" shape add rounded -l "子1" --x 162 --y 140 -w 150 -h 50
+# ... 依次添加子2~子N
 
-# 4. 添加连线（根 → 每个子节点）
+# 最后加所有子项（链式排列）
+& "C:\QuickTools\cli-anything\cli-anything-drawio.exe" --session my-sess --project "图表.drawio" shape add rounded -l "子项1" --x 167 --y 245 -w 140 -h 40
+& "C:\QuickTools\cli-anything\cli-anything-drawio.exe" --session my-sess --project "图表.drawio" shape add rounded -l "子项2" --x 167 --y 320 -w 140 -h 40
+# ... 依次添加
+
+# 4. 添加连线（全部用 orthogonal）
+# 根 → 子（直角正交）
 & "C:\QuickTools\cli-anything\cli-anything-drawio.exe" --session my-sess --project "图表.drawio" connect add <根ID> <子ID> --style orthogonal
-# 连线使用 orthogonal 样式，自动走直角路径
 
-# 5. 导出 PNG（超清：scale=2，边框 20px）
+# 子 → 第1子项（正交）
+& "C:\QuickTools\cli-anything\cli-anything-drawio.exe" --session my-sess --project "图表.drawio" connect add <子ID> <子项1ID> --style orthogonal
+
+# 子项链式（相邻连接，勿连回父节点）
+& "C:\QuickTools\cli-anything\cli-anything-drawio.exe" --session my-sess --project "图表.drawio" connect add <子项1ID> <子项2ID> --style orthogonal
+& "C:\QuickTools\cli-anything\cli-anything-drawio.exe" --session my-sess --project "图表.drawio" connect add <子项2ID> <子项3ID> --style orthogonal
+
+# 5. 导出 PNG（超清）
 & "C:\QuickTools\cli-anything\cli-anything-drawio.exe" --session my-sess --project "图表.drawio" export render "图表.png" --crop --border 20 --scale 3 --overwrite
 
 # 6. 用桌面应用打开验证（可选）
@@ -190,6 +213,13 @@ Start-Process "C:\Program Files\draw.io\draw.io.exe" -ArgumentList "图表.drawi
 1. **节点 ID**：`shape add` 返回的 id 保存在输出中，需记录用于 `connect add`
 2. **画布大小**：默认 850×1100，超过需在 draw.io 中手动调整
 3. **中文宽度**：每个中文字 ≈ 14-16px，标签越长宽度需越大
-4. **连接线样式**：`--style orthogonal` 生成直角连线，树形图推荐；`straight` 直线；`curved` 曲线
-5. **会话管理**：所有命令需带相同 `--session` 和 `--project` 保持状态
-6. **文件格式**：`.drawio` 文件是 XML 格式，可直接被 draw.io 桌面应用打开
+4. **连接线样式**：
+   - `orthogonal`（正交）— **树形图唯一选择**。纯直角路径，不穿过其他节点
+   - `straight`（斜线）— **禁止用于多级树**。斜线会穿过中间层级的节点
+   - `curved`（曲线）— 装饰用途，不适合数据展示
+5. **子项连接规则（关键）**：
+   - ❌ 禁止所有子项都连接到父节点——连线穿过中间子项
+   - ✅ 必须用**链式连接**：父→第1子项, 第1→第2, 第2→第3, ...
+6. **会话管理**：所有命令需带相同 `--session` 和 `--project` 保持状态
+7. **文件格式**：`.drawio` 文件是 XML 格式，可直接被 draw.io 桌面应用打开
+8. **画布大小**：多列树形图（6列+）建议 1400×900，可手动调整
