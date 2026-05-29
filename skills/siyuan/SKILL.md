@@ -61,7 +61,7 @@ pip install -e "."
 }
 ```
 
-或环境变量：`SIYUAN_HOST`、`SIYUAN_PORT`、`SIYUAN_TOKEN`
+或环境变量（优先级高于配置文件）：`SIYUAN_HOST`、`SIYUAN_PORT`、`SIYUAN_TOKEN`
 
 ## 解析 ID 为文档标题的方法
 
@@ -111,7 +111,7 @@ cat "~/SiYuan/data\<notebook-id>\.siyuan\conf.json"
 ### 文档管理
 | 命令 | 说明 |
 |------|------|
-| `cli-anything-siyuan doc create <notebook-id> <path> [--md content]` | 创建文档 |
+| `cli-anything-siyuan doc create <notebook-id> <path> [--md content]` | 创建文档。`--md -` 从 stdin 读取内容（避免 shell 转义） |
 | `cli-anything-siyuan doc list <notebook-id> [path]` | 列出文档（显示标题） |
 | `cli-anything-siyuan doc tree <notebook-id>` | 文档树（显示标题） |
 | `cli-anything-siyuan doc get <doc-id>` | 获取文档路径和标题 |
@@ -212,6 +212,12 @@ cat ~/note.md | cli-anything-siyuan block insert --parent <block-id>
 
 # 8. 更新块内容（管道）
 echo "# New Title" | cli-anything-siyuan block update <block-id>
+
+# 9. 创建文档并传入 Markdown（stdin 管道，避免转义）
+@'
+## 标题
+代码：`var x = 1;` 和 (括号) 和 "引号"
+'@ | cli-anything-siyuan doc create nb1 /path --md -
 ```
 
 ## 注意事项
