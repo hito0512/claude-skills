@@ -232,3 +232,20 @@ echo "# New Title" | cli-anything-siyuan block update <block-id>
 - 配置文件损坏时自动回退到环境变量
 - 通过 `find ~/SiYuan/data -name "*<ID>*.sy"` 可通过 ID 反查文件位置
 - 通过读取 `.sy` 文件的 `Properties.title` 可获取文档标题
+
+## PowerShell 管道中文编码
+
+PowerShell 的 `$OutputEncoding` 默认是 US-ASCII，管道传中文给外部程序时会变成 `????`。需要用 `Get-Content` 时配合设置编码：
+
+```powershell
+# 先设置管道输出编码为 UTF-8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
+# 再执行管道命令
+Get-Content -Path note.md -Raw -Encoding UTF8 | cli-anything-siyuan block insert --parent <id>
+```
+
+或写入 profile 永久生效：
+```powershell
+Add-Content $PROFILE "`$OutputEncoding = [System.Text.Encoding]::UTF8"
+```
