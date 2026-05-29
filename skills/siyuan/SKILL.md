@@ -22,7 +22,6 @@ success_criteria:
 
 - 任何删除/移除操作（`remove`、`delete`）**必须**经用户明确确认后才可执行
 - 禁止在未告知用户的情况下自动执行破坏性操作
-- 删除操作需添加 `--dangerous` 标记以显式确认
 
 ### 📝 输出必须用文档标题，禁止裸 ID
 
@@ -105,7 +104,7 @@ cat "~/SiYuan/data\<notebook-id>\.siyuan\conf.json"
 | `cli-anything-siyuan notebook list` | 列出所有笔记本（显示名称） |
 | `cli-anything-siyuan notebook create <name>` | 创建笔记本 |
 | `cli-anything-siyuan notebook rename <id> <name>` | 重命名 |
-| `cli-anything-siyuan notebook remove <id>` | 删除（需 `--dangerous` 确认） |
+| `cli-anything-siyuan notebook remove <id>` | 删除笔记本 |
 | `cli-anything-siyuan notebook open <id>` | 打开笔记本 |
 
 ### 文档管理
@@ -115,8 +114,8 @@ cat "~/SiYuan/data\<notebook-id>\.siyuan\conf.json"
 | `cli-anything-siyuan doc list <notebook-id> [path]` | 列出文档（显示标题） |
 | `cli-anything-siyuan doc tree <notebook-id>` | 文档树（显示标题） |
 | `cli-anything-siyuan doc get <doc-id>` | 获取文档路径和标题 |
-| `cli-anything-siyuan doc rename <id> <title>` | 重命名（需 `--dangerous` 确认） |
-| `cli-anything-siyuan doc remove <id>` | 删除（需 `--dangerous` 确认） |
+| `cli-anything-siyuan doc rename <id> <title>` | 重命名文档 |
+| `cli-anything-siyuan doc remove <id>` | 删除文档 |
 
 ### 内容块操作
 | 命令 | 说明 |
@@ -125,7 +124,7 @@ cat "~/SiYuan/data\<notebook-id>\.siyuan\conf.json"
 | `cli-anything-siyuan block children <block-id>` | 查看子块 |
 | `cli-anything-siyuan block insert <data> [--parent / --previous / --next]` | 插入块（data 支持 stdin 管道：`cat file \| cli-anything-siyuan block insert --parent <id>`） |
 | `cli-anything-siyuan block update <id> <data>` | 更新块（data 支持 stdin 管道） |
-| `cli-anything-siyuan block delete <id>` | 删除块（需 `--dangerous` 确认） |
+| `cli-anything-siyuan block delete <id>` | 删除块 |
 
 ### 搜索与查询
 | 命令 | 说明 |
@@ -225,7 +224,7 @@ echo "# New Title" | cli-anything-siyuan block update <block-id>
 - 思源必须在运行状态，CLI 通过 HTTP API 连接
 - API Token 在思源「设置 - 关于」中查看
 - 默认端口 6806
-- **禁止自动执行删除操作** — 必须用户确认 + `--dangerous` 标记
+- **禁止自动执行删除操作** — 必须用户确认后才可执行（CLI 本身无二次确认，靠 agent 自律）
 - **所有输出必须显示标题/名称**，禁止裸 ID
 - 发布的模式下禁止 SQL 查询接口
 - API 错误会显示 `Error: <消息>` 而非 traceback
@@ -233,19 +232,3 @@ echo "# New Title" | cli-anything-siyuan block update <block-id>
 - 通过 `find ~/SiYuan/data -name "*<ID>*.sy"` 可通过 ID 反查文件位置
 - 通过读取 `.sy` 文件的 `Properties.title` 可获取文档标题
 
-## PowerShell 管道中文编码
-
-PowerShell 的 `$OutputEncoding` 默认是 US-ASCII，管道传中文给外部程序时会变成 `????`。需要用 `Get-Content` 时配合设置编码：
-
-```powershell
-# 先设置管道输出编码为 UTF-8
-$OutputEncoding = [System.Text.Encoding]::UTF8
-
-# 再执行管道命令
-Get-Content -Path note.md -Raw -Encoding UTF8 | cli-anything-siyuan block insert --parent <id>
-```
-
-或写入 profile 永久生效：
-```powershell
-Add-Content $PROFILE "`$OutputEncoding = [System.Text.Encoding]::UTF8"
-```
