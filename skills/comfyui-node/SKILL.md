@@ -1,6 +1,6 @@
 ---
 name: comfyui-node
-description: 创建 ComfyUI 自定义节点（Python）。使用 io.ComfyNode + define_schema 新版 API。当用户说"创建节点"、"写一个节点"、"ComfyUI node"、新建 .py 节点文件时触发。
+description: 创建/重构 ComfyUI 自定义节点（Python + JS 前端）。使用 io.ComfyNode + define_schema 新版 API。当用户说"创建节点"、"写一个节点"、"ComfyUI node"、"重构节点"、新建 .py 节点文件时触发。
 ---
 
 # ComfyUI Node Skill
@@ -15,6 +15,7 @@ description: 创建 ComfyUI 自定义节点（Python）。使用 io.ComfyNode + 
 6. **分类统一**：`category` 使用 `🌸 HanaNode/xxx` 格式（如 `🌸 HanaNode/IO`、`🌸 HanaNode/Image`）
 7. **显示名用中文**：`display_name`（Schema 字段）和 `NODE_DISPLAY_NAME_MAPPINGS` 的值都必须用中文（如 `"显存清理"`、`"🎈 显存清理"`），node_id 仍保持英文 `Hana` 前缀
 8. **import 放顶部**：所有 import 写入文件顶部，不在函数体内导入
+9. **必须检查 JS 前端文件**：重构/迁移节点时，必须检查源目录下是否有匹配的 JS 前端文件，一并复制到 `js/` 目录并更新 `nodeData.name` 匹配 `Hana` 前缀的 node_id
 
 ## 完整文件模板
 
