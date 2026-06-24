@@ -212,11 +212,11 @@ cat ~/note.md | cli-anything-siyuan block insert --parent <block-id>
 # 8. 更新块内容（管道）
 echo "# New Title" | cli-anything-siyuan block update <block-id>
 
-# 9. 创建文档并传入 Markdown（stdin 管道，避免转义）
-@'
+# 9. 创建文档并传入 Markdown（Bash heredoc，避免转义）
+cat <<'EOF' | cli-anything-siyuan doc create nb1 /path --md -
 ## 标题
 代码：`var x = 1;` 和 (括号) 和 "引号"
-'@ | cli-anything-siyuan doc create nb1 /path --md -
+EOF
 ```
 
 ## 注意事项
