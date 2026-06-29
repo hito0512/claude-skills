@@ -20,7 +20,7 @@ description: 创建/重构 ComfyUI 自定义节点（Python + JS 前端）。使
 11. **不要重写源逻辑**：重构现有节点时，**完整照搬源码逻辑**，只改类名（加 `Hana` 前缀）、node_id、category、display_name。不要自己重新实现算法
 12. **类名与映射必须一致**：`NODE_CLASS_MAPPINGS` 里引用的类名必须和实际定义的类名完全一致（改名时三处都要改：class 定义、node_id、NODE_CLASS_MAPPINGS value）
 13. **模块内导入用绝对导入**：`__init__.py` 把 `nodes/` 加到 `sys.path`，所以节点间互相导入用 `from xxx import Yyy`，**不要用** `from .xxx import Yyy` 相对导入
-14. **禁止重复硬编码**：**同一个值在多处重复出现**时，必须提取为命名常量集中定义（Python 模块级 `UPPER_CASE`；JS 作用域顶部 `const UPPER_CASE = ...`），后续全部引用常量名，改值只改一处。典型场景：JS 前端里节点尺寸/布局参数在 `computeSize`/`setSize`/`onResize`/`onAdded` 等多个回调里重复出现同一数值。**例外**：只出现一次、语义自明的值（如 `io.Int.Input` 的 `max=100, step=1` 这类 schema 边界值）无需提常量，直接写字面量即可
+14. **禁止重复硬编码（仅限 JS 前端）**：JS 前端里**同一个值在多处重复出现**时，必须提取为命名常量集中定义（在 `nodeCreated` / 闭包顶部 `const UPPER_CASE = ...`），后续全部引用常量名，改值只改一处。典型场景：节点尺寸/布局参数在 `computeSize`/`setSize`/`onResize`/`onAdded` 等多个回调里重复出现同一数值，必须提 `const MIN_WIDTH = 320;` 之类常量，不要写 `isV3 ? 320 : 220` 这类多处重复裸值。**Python 端 `define_schema` 不适用此规则**——`min`/`max`/`step`/`default` 等一律直接写字面量数值，不提常量
 
 ## 类别 emoji 前缀表
 
@@ -90,6 +90,6 @@ def execute(cls, text, count) -> io.NodeOutput:
 - [ ] **检查 JS 前端**：有则复制到 `js/`，更新 `nodeData.name` 匹配
 - [ ] **JS 依赖检查**：若 JS 依赖原项目内部模块（如 rgthree 的 base_node.js），要么写简化独立版，要么确认原项目仍启用
 - [ ] **模块间导入用绝对导入**（`from xxx import` 而非 `from .xxx import`）
-- [ ] **无重复硬编码**：同一值多处重复出现时提为命名常量集中定义，只引用常量名（一次性、语义自明的 schema 边界值除外）
+- [ ] **JS 前端无重复硬编码**：JS 里同一值多处重复出现时提为命名常量集中定义，只引用常量名（Python `define_schema` 不适用，直接写字面量）
 - [ ] **节点必须有输出端口或必填输入**，否则右键不显示"执行"按钮和"执行到选定节点"
 - [ ] **可选输入 + 无输出** 的节点不会出现在右键菜单，需加输出端口或把输入改必填
