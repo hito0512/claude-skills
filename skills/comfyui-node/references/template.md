@@ -5,10 +5,6 @@ import os
 import folder_paths
 from comfy_api.latest import io
 
-# 模块级常量：禁止硬编码魔法值，反复出现的数值/字符串都提到这里集中定义
-MAX_COUNT = 100
-COUNT_STEP = 1
-
 
 class MyNodeName(io.ComfyNode):
     @classmethod
@@ -24,7 +20,7 @@ class MyNodeName(io.ComfyNode):
                     tooltip="输入文本。",
                 ),
                 io.Int.Input(
-                    "count", display_name="重复次数", default=1, min=1, max=MAX_COUNT, step=COUNT_STEP,
+                    "count", display_name="重复次数", default=1, min=1, max=100, step=1,
                     tooltip="重复次数。",
                 ),
                 io.String.Input(
@@ -61,9 +57,9 @@ NODE_DISPLAY_NAME_MAPPINGS = {
 - **每个 `io.*.Input` / `io.*.Output` 都必须传 `display_name="中文"`**：`id` 是英文机读名（与 `execute` 参数名一致），`display_name` 是 UI 上给人看的中文标签
 - `category` 统一用 `🌸 HanaNode/xxx` 格式
 - `import` 全部放在文件顶部
-- **禁止硬编码魔法值**：`max`/`min`/`step`、尺寸、阈值等反复出现的字面量必须提为模块级 `UPPER_CASE` 常量（如 `MAX_COUNT`、`COUNT_STEP`），代码里只引用常量名，改值只改一处
+- **禁止重复硬编码**：**同一个值在多处重复出现**时提为命名常量集中定义，代码只引用常量名，改值只改一处。一次性、语义自明的值（如 `io.Int.Input` 的 `max=100, step=1`）直接写字面量即可，无需提常量
 - `execute` 参数名和 schema `inputs` 中的 name 必须完全一致
 - 可选参数在 `execute` 中给默认值
 - `outputs` 列表顺序决定返回 tuple 的顺序
 
-JS 前端同理：在 `nodeCreated` / 闭包顶部集中定义 `const MIN_WIDTH = 320;` 等常量，所有 `computeSize`/`setSize`/`onResize` 等回调里只引用常量名，不要写 `isV3 ? 320 : 220` 这类裸值。
+JS 前端同理：节点尺寸/布局等参数若在 `computeSize`/`setSize`/`onResize`/`onAdded` 等多个回调里重复出现同一数值，必须在 `nodeCreated` / 闭包顶部集中定义 `const MIN_WIDTH = 320;` 等常量，回调里只引用常量名，不要写 `isV3 ? 320 : 220` 这类多处重复的裸值。
